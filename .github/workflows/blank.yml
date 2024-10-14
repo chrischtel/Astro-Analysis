@@ -33,14 +33,17 @@ jobs:
           # Set target based on OS
           if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
             ZIG_TARGET="x86_64-macos"
+            EXTRA_FLAGS=""  # Do not link libc on macOS
           elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             ZIG_TARGET="x86_64-linux-gnu"
+            EXTRA_FLAGS="-lc"
           elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             ZIG_TARGET="x86_64-windows-gnu"
+            EXTRA_FLAGS="-lc"
           fi
 
-          # Build the library with headers and release mode, linking libc (-lc)
-          zig build-lib src/root.zig -lc -femit-h -Drelease-safe -target $ZIG_TARGET
+          # Build the library with headers and release mode, conditionally linking libc
+          zig build-lib src/root.zig $EXTRA_FLAGS -femit-h -Drelease-safe -target $ZIG_TARGET
           
           # Move the generated header to the include directory
           mv root.h include/
