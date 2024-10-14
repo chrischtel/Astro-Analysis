@@ -46,7 +46,7 @@ jobs:
           fi
 
           # Build the library with headers and release mode
-          zig build-lib src/root.zig -femit-h -Drelease-safe -target $ZIG_TARGET $EXTRA_FLAGS
+          zig build-lib src/root.zig -lc -femit-h -Drelease-safe -target $ZIG_TARGET $EXTRA_FLAGS
           mv root.h include/
 
           # Create distribution directory
