@@ -31,15 +31,15 @@ jobs:
       - name: Build library for ${{ matrix.os }}
         run: |
           # Build the library with headers and release mode
-          zig build-lib src/lib.zig -lc -femit-h -Drelease-safe -target ${{ matrix.os == 'windows-latest' && 'x86_64-windows-gnu' || 'x86_64-linux-gnu' }}
-
+          zig build-lib src/root.zig -lc -femit-h -Drelease-safe -target ${{ matrix.os == 'windows-latest' && 'x86_64-windows-gnu' || 'x86_64-linux-gnu' }}
+          mv root.h include/
           # Create distribution directory
           mkdir -p dist
           
           # Copy built library files and headers to distribution
           cp zig-out/lib/* dist/
           cp include/zig.h dist/
-          cp include/aAnalysis.h dist/    # Include your generated header
+          cp include/root.h dist/    # Include your generated header
           
       - name: Upload Release Binaries
         uses: actions/upload-artifact@v4
