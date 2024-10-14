@@ -39,20 +39,16 @@ jobs:
             ZIG_TARGET="x86_64-windows-gnu"
           fi
 
-          # Set additional flags for Windows to handle missing `-lc`
-          EXTRA_FLAGS=""
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            EXTRA_FLAGS="-Dtarget-native-windows"
-          fi
-
-          # Build the library with headers and release mode
-          zig build-lib src/root.zig -lc -femit-h -Drelease-safe -target $ZIG_TARGET $EXTRA_FLAGS
+          # Build the library with headers and release mode, linking libc (-lc)
+          zig build-lib src/root.zig -lc -femit-h -Drelease-safe -target $ZIG_TARGET
+          
+          # Move the generated header to the include directory
           mv root.h include/
 
-          # Create distribution directory
+          # Create the distribution directory
           mkdir -p dist
 
-          # Copy built library files and headers to distribution
+          # Copy the built library files and headers to the distribution
           cp libroot.a dist/
           cp include/zig.h dist/
           cp include/root.h dist/    # Include your generated header
