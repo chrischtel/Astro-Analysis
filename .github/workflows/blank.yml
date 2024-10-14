@@ -28,22 +28,11 @@ jobs:
           version: "0.13.0"
           use-cache: true
 
-      - name: Build library for ${{ matrix.os }}
+      - name: Build library for Linux only
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          # Set target based on OS
-          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            ZIG_TARGET="x86_64-macos"
-            EXTRA_FLAGS=""  # Do not link libc on macOS
-          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            ZIG_TARGET="x86_64-linux-gnu"
-            EXTRA_FLAGS="-lc"
-          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            ZIG_TARGET="x86_64-windows-gnu"
-            EXTRA_FLAGS="-lc"
-          fi
-
-          # Build the library with headers and release mode, conditionally linking libc
-          zig build-lib src/root.zig $EXTRA_FLAGS -femit-h -Drelease-safe -target $ZIG_TARGET
+          # Build the library with headers and release mode on Linux only
+          zig build-lib src/root.zig -lc -femit-h -Drelease-safe -target x86_64-linux-gnu
           
           # Move the generated header to the include directory
           mv root.h include/
@@ -57,6 +46,7 @@ jobs:
           cp include/root.h dist/    # Include your generated header
 
       - name: Upload Release Binaries
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: zig-lib-binaries
