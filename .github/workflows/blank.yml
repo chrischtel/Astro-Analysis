@@ -27,20 +27,36 @@ jobs:
         with:
           version: "0.13.0"
           use-cache: true
-          
+
       - name: Build library for ${{ matrix.os }}
         run: |
+          # Set target based on OS
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            ZIG_TARGET="x86_64-macos"
+          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            ZIG_TARGET="x86_64-linux-gnu"
+          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            ZIG_TARGET="x86_64-windows-gnu"
+          fi
+
+          # Set additional flags for Windows to handle missing `-lc`
+          EXTRA_FLAGS=""
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            EXTRA_FLAGS="-Dtarget-native-windows"
+          fi
+
           # Build the library with headers and release mode
-          zig build-lib src/root.zig -lc -femit-h -Drelease-safe -target ${{ matrix.os == 'windows-latest' && 'x86_64-windows-gnu' || 'x86_64-linux-gnu' }}
+          zig build-lib src/root.zig -femit-h -Drelease-safe -target $ZIG_TARGET $EXTRA_FLAGS
           mv root.h include/
+
           # Create distribution directory
           mkdir -p dist
-          
+
           # Copy built library files and headers to distribution
           cp libroot.a dist/
           cp include/zig.h dist/
           cp include/root.h dist/    # Include your generated header
-          
+
       - name: Upload Release Binaries
         uses: actions/upload-artifact@v4
         with:
